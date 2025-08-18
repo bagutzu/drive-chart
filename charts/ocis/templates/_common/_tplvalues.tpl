@@ -38,6 +38,7 @@ Adds the app names to the scope and set the name of the app based on the input p
   {{- $_ := set .scope "appNameAudit" "audit" -}}
   {{- $_ := set .scope "appNameAuthMachine" "authmachine" -}}
   {{- $_ := set .scope "appNameAuthService" "authservice" -}}
+  {{- $_ := set .scope "appNameAuthApp" "authapp" -}}
   {{- $_ := set .scope "appNameAntivirus" "antivirus" -}}
   {{- $_ := set .scope "appNameClientlog" "clientlog" -}}
   {{- $_ := set .scope "appNameCollaboration" "collaboration" -}}
@@ -165,6 +166,10 @@ metadata:
   namespace: {{ template "ocis.namespace" . }}
   labels:
     {{- include "ocis.labels" . | nindent 4 }}
+  {{- with .Values.extraAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end -}}
 
 {{/*
@@ -227,7 +232,11 @@ oCIS deployment strategy
 {{- define "ocis.deploymentStrategy" -}}
   {{- with $.Values.deploymentStrategy }}
 strategy:
-  {{- toYaml . | nindent 2 }}
+  type: {{ .type }}
+  {{- if eq .type "RollingUpdate" }}
+  rollingUpdate:
+  {{- toYaml .rollingUpdate | nindent 4 }}
+  {{- end }}
   {{- end }}
 {{- end -}}
 

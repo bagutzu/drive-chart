@@ -281,6 +281,19 @@
       "title": "externalDomain",
       "type": "string"
     },
+    "extraAnnotations": {
+      "additionalProperties": false,
+      "description": "Custom annotations for all deployments",
+      "patternProperties": {
+        ".*": {
+          "required": [],
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "extraAnnotations",
+      "type": "object"
+    },
     "extraLabels": {
       "additionalProperties": false,
       "description": "Custom labels for all manifests",
@@ -532,6 +545,24 @@
             "maxNumFiles"
           ],
           "title": "archiver",
+          "type": "object"
+        },
+        "authapp": {
+          "additionalProperties": false,
+          "description": "Auth app settings",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enables Auth app service",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "authapp",
           "type": "object"
         },
         "demoUsers": {
@@ -1316,6 +1347,50 @@
                   "title": "skipUserInfo",
                   "type": "boolean"
                 },
+                "spaceAssignment": {
+                  "additionalProperties": false,
+                  "description": "Configure OIDC space assignment. If activate, oCIS will read the space assignements from the oidc token",
+                  "properties": {
+                    "claim": {
+                      "default": "",
+                      "description": "The name of the OIDC claim holding the space assignment",
+                      "required": [],
+                      "title": "claim",
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "default": false,
+                      "description": "enable OIDC space assignment.",
+                      "required": [],
+                      "title": "enabled",
+                      "type": "boolean"
+                    },
+                    "mapping": {
+                      "description": "Configure the mapping for the role assignment.\nExample configuration:\n- oidcRoleA:manager\n- oidcRoleB:editor\n- oidcRoleC:viewer",
+                      "items": {
+                        "required": [],
+                        "type": "string"
+                      },
+                      "required": [],
+                      "title": "mapping",
+                      "type": "array"
+                    },
+                    "regexp": {
+                      "default": "(.*)",
+                      "description": "The regexp extracting the spaceid and the -role from the claim",
+                      "required": [],
+                      "title": "regexp",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "claim",
+                    "regexp"
+                  ],
+                  "title": "spaceAssignment",
+                  "type": "object"
+                },
                 "userIDClaim": {
                   "default": "ocis.user.uuid",
                   "description": "Claim to take an unique user identifier from. It will be used to look up the user on the LDAP server.",
@@ -1879,9 +1954,17 @@
         "policies",
         "edition",
         "archiver",
-        "ocm"
+        "ocm",
+        "authapp"
       ],
       "title": "features",
+      "type": "object"
+    },
+    "global": {
+      "additionalProperties": true,
+      "description": "Needs to be added to the schema, so that this chart can be used as subchart when `global` is set.\nsee https://github.com/owncloud/ocis-charts/issues/872",
+      "required": [],
+      "title": "global",
       "type": "object"
     },
     "hostAliases": {
@@ -3749,6 +3832,318 @@
             "image"
           ],
           "title": "audit",
+          "type": "object"
+        },
+        "authapp": {
+          "additionalProperties": false,
+          "description": "AUTH SERVICE service.",
+          "properties": {
+            "affinity": {
+              "additionalProperties": true,
+              "description": "Per-service affinity.",
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "autoscaling": {
+              "additionalProperties": true,
+              "description": "Per-service autoscaling. Overrides the default setting from `autoscaling` if set.",
+              "properties": {
+                "enabled": {
+                  "required": [],
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "minimum": 1,
+                  "required": [],
+                  "type": "integer"
+                },
+                "metrics": {
+                  "additionalProperties": true,
+                  "required": []
+                },
+                "minReplicas": {
+                  "minimum": 1,
+                  "required": [],
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "title": "autoscaling",
+              "type": "object"
+            },
+            "extraLabels": {
+              "additionalProperties": false,
+              "description": "Per-service custom labels",
+              "patternProperties": {
+                ".*": {
+                  "required": [],
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "extraLabels",
+              "type": "object"
+            },
+            "image": {
+              "additionalProperties": false,
+              "description": "Per-service image configuration. Overrides the default setting from `image` if set.",
+              "properties": {
+                "pullPolicy": {
+                  "default": "",
+                  "description": "Image pull policy",
+                  "required": [],
+                  "title": "pullPolicy",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "repository": {
+                  "default": "",
+                  "description": "Image repository",
+                  "required": [],
+                  "title": "repository",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sha": {
+                  "default": "",
+                  "description": "Image sha / digest (optional).",
+                  "required": [],
+                  "title": "sha",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tag": {
+                  "default": "",
+                  "description": "Image tag.",
+                  "required": [],
+                  "title": "tag",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [],
+              "title": "image",
+              "type": "object"
+            },
+            "nodeSelector": {
+              "additionalProperties": false,
+              "description": "Per-service nodeSelector configuration. Overrides the default setting from `nodeSelector` if set.",
+              "patternProperties": {
+                ".*": {
+                  "required": [],
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "persistence": {
+              "additionalProperties": false,
+              "description": "Persistence settings.",
+              "properties": {
+                "accessModes": {
+                  "description": "Persistent volume access modes.",
+                  "items": {
+                    "enum": [
+                      "ReadWriteOnce",
+                      "ReadOnlyMany",
+                      "ReadWriteMany",
+                      "ReadWriteOncePod"
+                    ],
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "accessModes",
+                  "type": "array"
+                },
+                "annotations": {
+                  "additionalProperties": false,
+                  "description": "Persistent volume annotations.",
+                  "patternProperties": {
+                    ".*": {
+                      "required": [],
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "claimName": {
+                  "default": "",
+                  "description": "Use a custom name for the PVC instead of the default one.",
+                  "required": [],
+                  "title": "claimName",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Enables persistence.\nNeeds to be enabled on production installations.\nIf not enabled, pod restarts will lead to data loss.\nAlso scaling this service to more than one replica is not possible if the pods don't share the same volume.",
+                  "required": [],
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "existingClaim": {
+                  "default": "",
+                  "description": "Use an existing PersistentVolumeClaim for persistence.",
+                  "required": [],
+                  "title": "existingClaim",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "finalizers": {
+                  "description": "Persistent volume finalizers.",
+                  "items": {
+                    "required": [],
+                    "type": "string"
+                  },
+                  "required": [],
+                  "title": "finalizers",
+                  "type": "array"
+                },
+                "selectorLabels": {
+                  "additionalProperties": false,
+                  "description": "Persistent volume selector labels.",
+                  "patternProperties": {
+                    ".*": {
+                      "required": [],
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "selectorLabels",
+                  "type": "object"
+                },
+                "size": {
+                  "default": "1Gi",
+                  "description": "Size of the persistent volume.",
+                  "required": [],
+                  "title": "size",
+                  "type": "string"
+                },
+                "storageClassName": {
+                  "default": "",
+                  "description": "Storage class to use.\nUses the default storage class if not set.",
+                  "required": [],
+                  "title": "storageClassName",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "enabled",
+                "size"
+              ],
+              "title": "persistence",
+              "type": "object"
+            },
+            "podDisruptionBudget": {
+              "additionalProperties": false,
+              "description": "Per-service PodDisruptionBudget. Overrides the default setting from `podDisruptionBudget` if set.",
+              "properties": {
+                "maxUnavailable": {
+                  "oneOf": [
+                    {
+                      "required": [],
+                      "type": "integer"
+                    },
+                    {
+                      "required": [],
+                      "type": "string"
+                    }
+                  ],
+                  "required": []
+                },
+                "minAvailable": {
+                  "oneOf": [
+                    {
+                      "required": [],
+                      "type": "integer"
+                    },
+                    {
+                      "required": [],
+                      "type": "string"
+                    }
+                  ],
+                  "required": []
+                }
+              },
+              "required": [],
+              "title": "podDisruptionBudget",
+              "type": "object"
+            },
+            "priorityClassName": {
+              "default": "",
+              "description": "Per-service priorityClassName configuration. Overrides the default setting from `priorityClassName` if set.",
+              "required": [],
+              "title": "priorityClassName",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "resources": {
+              "additionalProperties": false,
+              "description": "Per-service resources configuration. Overrides the default setting from `resources` if set.",
+              "properties": {
+                "limits": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "required": [],
+                      "type": "string"
+                    },
+                    "memory": {
+                      "required": [],
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "type": "object"
+                },
+                "requests": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "required": [],
+                      "type": "string"
+                    },
+                    "memory": {
+                      "required": [],
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            }
+          },
+          "required": [
+            "image",
+            "persistence"
+          ],
+          "title": "authapp",
           "type": "object"
         },
         "authmachine": {
@@ -9868,15 +10263,17 @@
                       "type": "boolean"
                     },
                     "personalDeleteBefore": {
-                      "default": "30d",
-                      "description": "Setting that makes the command delete all trashed personal files older than the value. The value is a number and a unit \"d\", \"h\", \"m\", \"s\".",
+                      "default": "720h",
+                      "description": "Setting that makes the command delete all trashed personal files older than the value. The value is a number and a unit \"h\", \"m\", \"s\", \"ms\".",
+                      "pattern": "^[0-9]*([hms]|ms)$",
                       "required": [],
                       "title": "personalDeleteBefore",
                       "type": "string"
                     },
                     "projectDeleteBefore": {
-                      "default": "30d",
-                      "description": "Setting that makes the command delete all trashed project files older than the value. The value is a number and a unit \"d\", \"h\", \"m\", \"s\".",
+                      "default": "720h",
+                      "description": "Setting that makes the command delete all trashed project files older than the value. The value is a number and a unit \"h\", \"m\", \"s\", \"ms\".",
+                      "pattern": "^[0-9]*([hms]|ms)$",
                       "required": [],
                       "title": "projectDeleteBefore",
                       "type": "string"
@@ -12406,6 +12803,7 @@
         "audit",
         "authmachine",
         "authservice",
+        "authapp",
         "antivirus",
         "clientlog",
         "eventhistory",

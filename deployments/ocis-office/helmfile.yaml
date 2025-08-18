@@ -38,14 +38,14 @@ releases:
   - name: rabbitmq
     namespace: onlyoffice
     chart: bitnami/rabbitmq
-    version: 15.3.3
+    version: 15.5.3
     labels:
       ci-lint-skip: true # skip linting this chart in CI
 
   - name: redis
     namespace: onlyoffice
     chart: bitnami/redis
-    version: 20.11.2
+    version: 20.12.2
     labels:
       ci-lint-skip: true # skip linting this chart in CI
 
@@ -64,7 +64,7 @@ releases:
   - name: onlyoffice
     namespace: onlyoffice
     chart: onlyoffice/docs
-    version: 4.5.1
+    version: 4.7.0
     labels:
       ci-lint-skip: true # skip linting this chart in CI
     needs:
@@ -112,7 +112,7 @@ releases:
   - name: collabora
     namespace: collabora
     chart: collabora/collabora-online
-    version: 1.1.35
+    version: 1.1.37
     labels:
       ci-lint-skip: true # skip linting this chart in CI
     values:
